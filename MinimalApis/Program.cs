@@ -7,7 +7,10 @@ using MinimalApis.RepositoryLayer.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register DbContext (High performance: UsePooling)
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+});
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sqlOptions =>
@@ -17,11 +20,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
             maxRetryDelay: TimeSpan.FromSeconds(10),
             errorNumbersToAdd: null);
     }));
-
-builder.Services.ConfigureHttpJsonOptions(options =>
-{
-    options.SerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-});
 
 // Register services
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
@@ -47,7 +45,7 @@ app.MapGet("/employees", async (IEmployeeService service) =>
 app.MapGet("/employees/{id:int}", async (int id, IEmployeeService service) =>
 {
     var employee = await service.GetByIdAsync(id);
-    return employee is not null ? Results.Ok(employee) : Results.NotFound();
+    return employee.Value.name is not null ? Results.Ok(employee) : Results.NotFound();
 });
 
 // POST - Create Employee
