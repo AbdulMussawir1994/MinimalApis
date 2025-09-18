@@ -25,15 +25,21 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 
+builder.Services.AddEndpointsApiExplorer(); // REQUIRED for minimal APIs
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Middleware pipeline
-if (app.Environment.IsDevelopment())
+app.UseStaticFiles();
+
+if (app.Environment.IsDevelopment() || app.Environment.IsStaging() || app.Environment.IsProduction())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "My API v1");
+        options.RoutePrefix = string.Empty; // Swagger at root URL
+    });
 }
 
 app.MapGet("/", () => Results.Ok("✅ Minimal API with Clean Architecture is running!"));
