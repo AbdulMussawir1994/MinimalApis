@@ -7,7 +7,7 @@ public static class ValidationExtensions
 {
     public static IResult ValidateModel<T>(this T model)
     {
-        if (model == null)
+        if (model is null)
             return Results.BadRequest(new { error = "Request body is missing or invalid." });
 
         // create the context with the same instance

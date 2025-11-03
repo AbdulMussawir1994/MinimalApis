@@ -10,14 +10,11 @@ using MinimalApis.RepositoryLayer.Service;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
-// -----------------------------------------------------
-// 1️⃣ Configure JSON & Database
-// -----------------------------------------------------
+
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
 });
-
 
 builder.Services.AddDbContextPool<AppDbContext>(options =>
     options.UseSqlServer(
@@ -26,9 +23,17 @@ builder.Services.AddDbContextPool<AppDbContext>(options =>
     )
 );
 
-// -----------------------------------------------------
-// 2️⃣ Identity, Authentication & Authorization
-// -----------------------------------------------------
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy("AllowCors", x =>
+    {
+        x.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .SetPreflightMaxAge(TimeSpan.FromMinutes(1));
+    });
+});
+
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
@@ -43,36 +48,24 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
-// -----------------------------------------------------
-// 3️⃣ Dependency Injection (Services)
-// -----------------------------------------------------
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 
-// -----------------------------------------------------
-// 4️⃣ Swagger (API Documentation)
-// -----------------------------------------------------
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// -----------------------------------------------------
-// 5️⃣ Build the App
-// -----------------------------------------------------
+
+
 var app = builder.Build();
 
-// -----------------------------------------------------
-// 6️⃣ Middleware Pipeline
-// -----------------------------------------------------
 if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 {
     app.UseDeveloperExceptionPage();
 }
 
-// Serve static files if needed
 app.UseStaticFiles();
 
-// ✅ Swagger middleware (UI at /swagger)
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
@@ -82,12 +75,12 @@ app.UseSwaggerUI(options =>
 
 app.UseHttpsRedirection();
 
+app.UseCors("AllowCors");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
-// -----------------------------------------------------
-// 7️⃣ Minimal API Endpoints
-// -----------------------------------------------------
+
 app.MapGet("/", () => Results.Ok("✅ Minimal API with Clean Architecture is running!"));
 
 // Employee Endpoints
@@ -125,8 +118,8 @@ app.MapPost("/login", async (LoginRequestDto model, IUserService service, Cancel
 })
 .WithName("Login")
 .WithOpenApi()
-.Produces<GenericsResponse<LoginResponseModelDto>>(StatusCodes.Status200OK)
-.Produces<GenericsResponse<LoginResponseModelDto>>(StatusCodes.Status400BadRequest);
+.Produces<GenericResponse<LoginResponseModelDto>>(StatusCodes.Status200OK)
+.Produces<GenericResponse<LoginResponseModelDto>>(StatusCodes.Status400BadRequest);
 
 // User Register
 app.MapPost("/register", async (RegisterViewModelDto model, IUserService service, CancellationToken ct) =>
@@ -140,8 +133,8 @@ app.MapPost("/register", async (RegisterViewModelDto model, IUserService service
 })
 .WithName("Register")
 .WithOpenApi()
-.Produces<GenericsResponse<LoginResponseModelDto>>(StatusCodes.Status200OK)
-.Produces<GenericsResponse<LoginResponseModelDto>>(StatusCodes.Status400BadRequest);
+.Produces<GenericResponse<LoginResponseModelDto>>(StatusCodes.Status200OK)
+.Produces<GenericResponse<LoginResponseModelDto>>(StatusCodes.Status400BadRequest);
 
 // Employee Update
 app.MapPut("/employees/{id:int}", async (int id, EmployeeDto dto, IEmployeeService service) =>
@@ -164,7 +157,5 @@ app.MapDelete("/employees/{id:int}", async (int id, IEmployeeService service) =>
     return deleted ? Results.NoContent() : Results.NotFound();
 });
 
-// -----------------------------------------------------
-// 8️⃣ Run the App
-// -----------------------------------------------------
+
 app.Run();

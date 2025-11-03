@@ -28,53 +28,53 @@ public class UserService : IUserService
         _cachedKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
     }
 
-    public async Task<GenericsResponse<LoginResponseModelDto>> LoginUserAsync(LoginRequestDto model, CancellationToken cancellationToken)
+    public async Task<GenericResponse<LoginResponseModelDto>> LoginUserAsync(LoginRequestDto model, CancellationToken cancellationToken)
     {
         var user = await _userManager.FindByNameAsync(model.userName).ConfigureAwait(false);
 
         if (user is null)
-            return GenericsResponse<LoginResponseModelDto>.Fail("Invalid username.", "Error-404");
+            return GenericResponse<LoginResponseModelDto>.Fail("Invalid username.", "Error-404");
 
         if (await _userManager.IsLockedOutAsync(user).ConfigureAwait(false))
-            return GenericsResponse<LoginResponseModelDto>.Fail("Account locked. Try again after 60 minutes.", "Error-400");
+            return GenericResponse<LoginResponseModelDto>.Fail("Account locked. Try again after 60 minutes.", "Error-400");
 
         if (!await _userManager.CheckPasswordAsync(user, model.password).ConfigureAwait(false))
         {
             await _userManager.AccessFailedAsync(user).ConfigureAwait(false);
 
             if (await _userManager.IsLockedOutAsync(user).ConfigureAwait(false))
-                return GenericsResponse<LoginResponseModelDto>.Fail("Account locked. Try again after 60 minutes.", "Error-400");
+                return GenericResponse<LoginResponseModelDto>.Fail("Account locked. Try again after 60 minutes.", "Error-400");
 
-            return GenericsResponse<LoginResponseModelDto>.Fail("Invalid password.", "Error-404");
+            return GenericResponse<LoginResponseModelDto>.Fail("Invalid password.", "Error-404");
         }
 
         await _userManager.ResetAccessFailedCountAsync(user).ConfigureAwait(false);
 
         var roles = await _userManager.GetRolesAsync(user).ConfigureAwait(false);
-        if (roles is null || roles.Count == 0)
+        if (roles is null || !roles.Any())
             roles = new List<string> { "User" };
 
         var token = GenerateKmacJwtToken(user.Id, roles, user.Email);
 
-        return GenericsResponse<LoginResponseModelDto>.Success(
+        return GenericResponse<LoginResponseModelDto>.Success(
             new LoginResponseModelDto { token = token },
             "Login successful.",
             "SUCCESS-200"
         );
     }
 
-    public async Task<GenericsResponse<string>> RegisterUserAsync(RegisterViewModelDto model, CancellationToken cancellationToken)
+    public async Task<GenericResponse<string>> RegisterUserAsync(RegisterViewModelDto model, CancellationToken cancellationToken)
     {
 
         var checkEmail = await _userManager.FindByEmailAsync(model.Email).ConfigureAwait(false);
 
         if (checkEmail is not null)
-            return GenericsResponse<string>.Fail("Email is already registered.", "Error-400");
+            return GenericResponse<string>.Fail("Email is already registered.", "Error-400");
 
         var checkUsername = await _userManager.FindByNameAsync(model.Email).ConfigureAwait(false);
 
         if (checkUsername is not null)
-            return GenericsResponse<string>.Fail("Username is already registered.", "Error-400");
+            return GenericResponse<string>.Fail("Username is already registered.", "Error-400");
 
 
         var user = new AppUser
@@ -93,16 +93,16 @@ public class UserService : IUserService
             if (!result.Succeeded)
             {
                 await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
-                return GenericsResponse<string>.ExceptionFailed(result.Errors.FirstOrDefault()?.Description ?? "Unknown error.", "REGISTRATION_FAILED", "Error-400");
+                return GenericResponse<string>.ExceptionFailed(result.Errors.FirstOrDefault()?.Description ?? "Unknown error.", "REGISTRATION_FAILED", "Error-400");
             }
 
             await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-            return GenericsResponse<string>.Success(model.Username, "Register successful.", "SUCCESS-200");
+            return GenericResponse<string>.Success(model.Username, "Register successful.", "SUCCESS-200");
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
-            return GenericsResponse<string>.ExceptionFailed(ex.Message, "REGISTRATION_FAILED", "Error-500");
+            return GenericResponse<string>.ExceptionFailed(ex.Message, "REGISTRATION_FAILED", "Error-500");
         }
     }
 
