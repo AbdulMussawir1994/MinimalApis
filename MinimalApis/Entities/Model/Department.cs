@@ -7,8 +7,10 @@ public class Department
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
+
+    [Required, MaxLength(100)]
     public string Name { get; set; } = string.Empty;
 
     // Navigation property
-    public ICollection<Employee> Employees { get; set; } = new List<Employee>();
+    public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
 }
