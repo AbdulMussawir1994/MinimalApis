@@ -54,7 +54,8 @@ public class UserService : IUserService
         if (roles is null || !roles.Any())
             roles = new List<string> { "User" };
 
-        var token = GenerateKmacJwtToken(user.Id, roles, user.Email);
+        //    var token = GenerateKmacJwtToken(user.Id, roles, user.Email);
+        var token = GenerateToken(user.Id, roles, user.Email);
 
         return GenericResponse<LoginResponseModelDto>.Success(
             new LoginResponseModelDto { token = token },
@@ -104,6 +105,51 @@ public class UserService : IUserService
             await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
             return GenericResponse<string>.ExceptionFailed(ex.Message, "REGISTRATION_FAILED", "Error-500");
         }
+    }
+
+    private string GenerateToken(string userId, IEnumerable<string> roles, string email)
+    {
+        var utcNow = DateTime.UtcNow;
+
+        // ✅ Core JWT claims
+        var claims = new List<Claim>
+    {
+        new(JwtRegisteredClaimNames.Sub, userId),
+        new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
+        new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
+        new(ClaimTypes.NameIdentifier, userId),
+        new(ClaimTypes.Email, email)
+    };
+
+        // ✅ Add role claims efficiently
+        if (roles is not null)
+        {
+            foreach (var role in roles)
+            {
+                if (!string.IsNullOrWhiteSpace(role))
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+        }
+
+        var secret = _configuration["JWTKey:Secret"]
+             ?? throw new InvalidOperationException("JWT secret is missing.");
+
+        var _jwtKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+
+        // ✅ Use HMAC-SHA-512 (stronger than SHA-256)
+        var credentials = new SigningCredentials(_jwtKey, SecurityAlgorithms.HmacSha512);
+
+        // ✅ Build token directly — faster than descriptor conversion
+        var token = new JwtSecurityToken(
+            issuer: _configuration["JWTKey:ValidIssuer"],
+            audience: _configuration["JWTKey:ValidAudience"],
+            claims: claims,
+            notBefore: utcNow,
+            expires: utcNow.AddMinutes(int.Parse(_configuration["JWTKey:TokenExpiryTimeInMinutes"] ?? "30")),
+            signingCredentials: credentials
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
     public string GenerateKmacJwtToken(string userId, IEnumerable<string> roles, string email)
