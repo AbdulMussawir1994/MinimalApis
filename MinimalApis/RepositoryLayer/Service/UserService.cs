@@ -323,6 +323,40 @@ public class UserService : IUserService
         return output;
     }
 
+    public async Task<GenericResponse<bool>> AddOutletAsync(AddOutletDto model)
+    {
+        bool exists = await _db.Outlets
+            .AsNoTracking()
+            .AnyAsync(x => x.OutletName == model.Name && x.Email == model.Email && x.CompanyId == model.CompanyId && x.CountryId == model.CountryId);
 
-    //public async Task<bool> AddOutlet()
+        if (exists)
+        {
+            return GenericResponse<bool>.Fail(
+                $"An outlet with the name '{model.Name}' already exists for the given company and country.",
+                "ERROR-409"
+            );
+        }
+
+        var outlet = new Outlet
+        {
+            OutletName = model.Name.Trim(),
+            CountryId = model.CountryId,
+            Email = model.Email?.Trim(),
+            Phone = model.Phone?.Trim(),
+            Address = model.Address?.Trim(),
+            IsActive = model.Active,
+            CreatedBy = "1", // Ideally, pass from the user context or token
+            CreatedOn = DateTime.UtcNow,
+            CompanyId = model.CompanyId,
+            CurrencyID = model.CurrencyId
+        };
+
+        await _db.Outlets.AddAsync(outlet).ConfigureAwait(false);
+
+        var affected = await _db.SaveChangesAsync().ConfigureAwait(false);
+
+        return affected > 0
+            ? GenericResponse<bool>.Success(data: true, message: "New outlet created successfully.", code: "SUCCESS-200")
+            : GenericResponse<bool>.Fail(message: "Failed to create outlet.", code: "ERROR-500");
+    }
 }

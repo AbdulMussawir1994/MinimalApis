@@ -190,6 +190,26 @@ app.MapPost("/employees", async (EmployeeDto dto, IEmployeeService service) =>
     return Results.Created($"/employees/{created.Id}", created);
 });
 
+//Add Outlet
+app.MapPost("/outlets", async (AddOutletDto model, IUserService service) =>
+{
+    var validation = model.ValidateModel();
+    if (validation is IStatusCodeHttpResult { StatusCode: 400 })
+        return validation;
+
+    var result = await service.AddOutletAsync(model);
+
+    if (!result.Status)
+        return Results.BadRequest(result);
+
+    return Results.Created($"/outlets/{result.Data}", result);
+})
+.WithName("AddOutlet")
+.Produces<GenericResponse<OutletDto>>(StatusCodes.Status201Created)
+.Produces<GenericResponse<OutletDto>>(StatusCodes.Status400BadRequest)
+.WithOpenApi()
+.RequireAuthorization();
+
 // User Login
 app.MapPost("/login", async (LoginRequestDto model, IUserService service, CancellationToken ct) =>
 {

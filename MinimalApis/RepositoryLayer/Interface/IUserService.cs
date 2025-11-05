@@ -9,4 +9,5 @@ public interface IUserService
     Task<GenericResponse<string>> RegisterUserAsync(RegisterViewModelDto model, CancellationToken cancellationToken);
     Task<GenericResponse<IQueryable<GetRolesByGroup>>> GetRolesByIdAsync(GetRolesById model);
     Task<GenericResponse<IEnumerable<OutletDto>>> GetOutletsAsync();
+    Task<GenericResponse<bool>> AddOutletAsync(AddOutletDto model);
 }

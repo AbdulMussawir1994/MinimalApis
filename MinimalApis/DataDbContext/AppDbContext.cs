@@ -59,6 +59,10 @@ public class AppDbContext : IdentityDbContext<AppUser>
             entity.Property(e => e.IsActive).HasDefaultValue(true).IsRequired();
         });
 
+        modelBuilder.Entity<Outlet>()
+                .HasIndex(o => new { o.OutletName, o.Email, o.CompanyId, o.CountryId })
+                 .IsUnique();
+
         // ---Relationships-- -
         modelBuilder.Entity<Department>()
             .HasMany(d => d.Employees)
