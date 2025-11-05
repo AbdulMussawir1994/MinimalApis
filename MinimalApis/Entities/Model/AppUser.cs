@@ -10,7 +10,6 @@ public class AppUser : IdentityUser
 
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public DateTime DateCreated { get; set; } = DateTime.UtcNow;
-
     public long? UpdatedBy { get; set; }
     public DateTime? UpdatedDate { get; set; }
     public bool IsActive { get; set; } = true;
@@ -21,15 +20,17 @@ public class AppUser : IdentityUser
     [Required]
     public int GroupId { get; set; }
 
-    public long OutletsId { get; set; }
-
     [Required]
     public int GroupRoleGroupId { get; set; }
 
-    // Navigation properties
+    public long OutletsId { get; set; }
+
+    // 🔗 Navigation
     public virtual Subscription Company { get; set; } = null!;
     public virtual GroupRoleMaster Group { get; set; } = null!;
-    public virtual GroupRoleDetail GroupRoleId { get; set; } = null!;
+    public virtual GroupRoleDetail GroupRole { get; set; } = null!;
 
     public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
 }
+
+

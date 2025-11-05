@@ -73,23 +73,26 @@ public class AppDbContext : IdentityDbContext<AppUser>
             .HasForeignKey(e => e.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // --- AppUser → Subscription ---
         modelBuilder.Entity<AppUser>()
-    .HasOne(u => u.Company)
-    .WithMany(s => s.AppUsers)
-    .HasForeignKey(u => u.CompanyId)
-    .OnDelete(DeleteBehavior.Restrict); // ✅ Fix 1
+            .HasOne(u => u.Company)
+            .WithMany(s => s.AppUsers)
+            .HasForeignKey(u => u.CompanyId)
+            .OnDelete(DeleteBehavior.Restrict);
 
+        // --- AppUser → GroupRoleMaster ---
         modelBuilder.Entity<AppUser>()
             .HasOne(u => u.Group)
-            .WithMany()
+            .WithMany(g => g.AppUsers)
             .HasForeignKey(u => u.GroupId)
-            .OnDelete(DeleteBehavior.Restrict); // ✅ Fix 2
+            .OnDelete(DeleteBehavior.Restrict);
 
+        // --- AppUser → GroupRoleDetail ---
         modelBuilder.Entity<AppUser>()
-            .HasOne(u => u.GroupRoleId)
-            .WithMany()
+            .HasOne(u => u.GroupRole)
+            .WithMany(r => r.AppUsers)
             .HasForeignKey(u => u.GroupRoleGroupId)
-            .OnDelete(DeleteBehavior.Restrict); // ✅ Fix 3
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Subscription>()
             .HasOne(s => s.Country)
@@ -202,8 +205,10 @@ public class AppDbContext : IdentityDbContext<AppUser>
         );
 
         modelBuilder.Entity<EntityList>().HasData(
-            new EntityList { EntityCode = "Dashboard", ModuleCode = "Dashboard", EntityName = "Dashboard", RowNo = 1, Path = "/dashboard", OrderNum = 1, Active = true, Icon = "dashboard" },
-            new EntityList { EntityCode = "Outlet", ModuleCode = "Outlet", EntityName = "Outlet", RowNo = 2, Path = "/outlets", OrderNum = 2, Active = true, Icon = "store" }
+          new EntityList { EntityCode = "Dashboard", ModuleCode = "Dashboard", EntityName = "Dashboard", RowNo = 1, Path = "/dashboard", OrderNum = 1, Active = true, Icon = "dashboard", IsParent = false },
+                   new EntityList { EntityCode = "Outlet", ModuleCode = "Outlet", EntityName = "Outlet", RowNo = 2, Path = "/outlets", OrderNum = 2, Active = true, Icon = "store", IsParent = false },
+                   new EntityList { EntityCode = "UserProfile", ModuleCode = "UserProfile", EntityName = "UserProfile", RowNo = 3, Path = "/profile", OrderNum = 3, Active = true, Icon = "person", IsParent = false },
+                   new EntityList { EntityCode = "Reports", ModuleCode = "Reports", EntityName = "Reports", RowNo = 4, Path = "/report", OrderNum = 4, Active = true, Icon = "report", IsParent = false }
         );
 
         modelBuilder.Entity<GroupRoleMaster>().HasData(
@@ -228,7 +233,34 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 Allow = true,
                 New = true,
                 Edit = true
-            }
+            },
+            new GroupRoleDetail
+            {
+                RoleDetailID = 2,
+                GroupID = 1, // FIXED to match seeded GroupRoleMaster
+                EntityCode = "Outlet",
+                Allow = true,
+                New = true,
+                Edit = true
+            },
+             new GroupRoleDetail
+             {
+                 RoleDetailID = 3,
+                 GroupID = 1, // FIXED to match seeded GroupRoleMaster
+                 EntityCode = "UserProfile",
+                 Allow = true,
+                 New = true,
+                 Edit = true
+             },
+             new GroupRoleDetail
+             {
+                 RoleDetailID = 4,
+                 GroupID = 1, // FIXED to match seeded GroupRoleMaster
+                 EntityCode = "Reports",
+                 Allow = true,
+                 New = true,
+                 Edit = true
+             }
         );
 
         modelBuilder.Entity<Subscription>().HasData(
