@@ -152,12 +152,31 @@ app.MapGet("/employees", async (IEmployeeService service) =>
     .RequireAuthorization();
 //.RequireAuthorization(new AuthorizeAttribute { Roles = "Admin" }); // ✅ Only Admin role
 
+// Outlet Endpoints
+app.MapGet("/outlets", async (IUserService service) =>
+    Results.Ok(await service.GetOutletsAsync()))
+    .RequireAuthorization();
+
+//Get Roles
+app.MapPost("/GetRolesById", async (GetRolesById model, IUserService service) =>
+{
+    var validation = model.ValidateModel();
+    if (validation is IStatusCodeHttpResult { StatusCode: 400 })
+        return validation;
+
+    var result = await service.GetRolesByIdAsync(model);
+    return result.Status ? Results.Ok(result) : Results.BadRequest(result);
+
+}).RequireAuthorization();
+
+//Get Employee By Id
 app.MapGet("/employees/{id:int}", async (int id, IEmployeeService service) =>
 {
     var employee = await service.GetByIdAsync(id);
     return employee.Value.name is not null ? Results.Ok(employee) : Results.NotFound();
 });
 
+// Add Employee
 app.MapPost("/employees", async (EmployeeDto dto, IEmployeeService service) =>
 {
     var employee = new Employee

@@ -20,15 +20,15 @@ public class AppUser : IdentityUser
     [Required]
     public int GroupId { get; set; }
 
-    [Required]
-    public int GroupRoleGroupId { get; set; }
+    //   [Required]
+    //   public int GroupRoleGroupId { get; set; }
 
     public long OutletsId { get; set; }
 
     // 🔗 Navigation
     public virtual Subscription Company { get; set; } = null!;
     public virtual GroupRoleMaster Group { get; set; } = null!;
-    public virtual GroupRoleDetail GroupRole { get; set; } = null!;
+    // public virtual GroupRoleDetail GroupRole { get; set; } = null!;
 
     public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
 }

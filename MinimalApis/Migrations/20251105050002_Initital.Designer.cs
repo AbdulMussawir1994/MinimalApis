@@ -12,7 +12,7 @@ using MinimalApis.DataDbContext;
 namespace MinimalApis.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251105034840_Initital")]
+    [Migration("20251105050002_Initital")]
     partial class Initital
     {
         /// <inheritdoc />
@@ -191,7 +191,7 @@ namespace MinimalApis.Migrations
                     b.Property<int>("GroupId")
                         .HasColumnType("int");
 
-                    b.Property<int>("GroupRoleGroupId")
+                    b.Property<int?>("GroupRoleDetailRoleDetailID")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsActive")
@@ -247,7 +247,7 @@ namespace MinimalApis.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.HasIndex("GroupRoleGroupId");
+                    b.HasIndex("GroupRoleDetailRoleDetailID");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -262,23 +262,22 @@ namespace MinimalApis.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "378c0b06-88dd-420a-9c5c-b0fe6d56a683",
+                            Id = "ab92c759-10fb-47fa-bda6-4435055a6f3c",
                             AccessFailedCount = 0,
                             CompanyId = 1,
-                            ConcurrencyStamp = "540c892e-c2f2-418e-a428-1671a3f5b88e",
+                            ConcurrencyStamp = "242cb370-716d-466f-abb1-c830c3e98c86",
                             DateCreated = new DateTime(2025, 11, 4, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "admin@library.com",
                             EmailConfirmed = true,
                             GroupId = 1,
-                            GroupRoleGroupId = 1,
                             IsActive = true,
                             LockoutEnabled = true,
                             NormalizedEmail = "ADMIN@LIBRARY.COM",
                             NormalizedUserName = "ADMIN123",
                             OutletsId = 0L,
-                            PasswordHash = "AQAAAAIAAYagAAAAENzabTFoyAiqITPlTOu0L/ViZ5+xk4r7NWvFVEhqqGB3jRGs+UibYuqmRPnsjR7oEQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEN+5qenel1nSpKFSTAEgPC/WyDeUXMQ6aq7IYKQf+FI96Y0qoOZYBTujJfeViaDSlg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "620ea8f8-601a-4cf1-8931-bb3cfd24d568",
+                            SecurityStamp = "956c1af3-961b-4a59-9b6a-9435c6c629ca",
                             TwoFactorEnabled = false,
                             UserName = "Admin123"
                         });
@@ -1034,17 +1033,13 @@ namespace MinimalApis.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("MinimalApis.Entities.Model.GroupRoleDetail", "GroupRole")
+                    b.HasOne("MinimalApis.Entities.Model.GroupRoleDetail", null)
                         .WithMany("AppUsers")
-                        .HasForeignKey("GroupRoleGroupId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("GroupRoleDetailRoleDetailID");
 
                     b.Navigation("Company");
 
                     b.Navigation("Group");
-
-                    b.Navigation("GroupRole");
                 });
 
             modelBuilder.Entity("MinimalApis.Entities.Model.Country", b =>

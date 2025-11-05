@@ -22,7 +22,6 @@ public class EmployeeService(AppDbContext context) : IEmployeeService
             })
             .ToListAsync();
 
-        // Return a cached empty array if no employees are found
         return !employees.Any() ? Array.Empty<GetEmployeeDto>() : employees;
     }
 

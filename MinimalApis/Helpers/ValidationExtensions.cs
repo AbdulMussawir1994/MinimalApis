@@ -10,12 +10,10 @@ public static class ValidationExtensions
         if (model is null)
             return Results.BadRequest(new { error = "Request body is missing or invalid." });
 
-        // create the context with the same instance
         var context = new ValidationContext(instance: model);
 
         var results = new List<ValidationResult>();
 
-        // 🔥 Important: Use model! (the same object reference as in the context)
         bool isValid = Validator.TryValidateObject(
             instance: context.ObjectInstance,
             validationContext: context,

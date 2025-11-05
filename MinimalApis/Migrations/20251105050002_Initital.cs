@@ -373,8 +373,8 @@ namespace MinimalApis.Migrations
                     IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
                     CompanyId = table.Column<int>(type: "int", nullable: false),
                     GroupId = table.Column<int>(type: "int", nullable: false),
-                    GroupRoleGroupId = table.Column<int>(type: "int", nullable: false),
                     OutletsId = table.Column<long>(type: "bigint", nullable: false),
+                    GroupRoleDetailRoleDetailID = table.Column<int>(type: "int", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -394,11 +394,10 @@ namespace MinimalApis.Migrations
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_AspNetUsers_GroupRolesDetails_GroupRoleGroupId",
-                        column: x => x.GroupRoleGroupId,
+                        name: "FK_AspNetUsers_GroupRolesDetails_GroupRoleDetailRoleDetailID",
+                        column: x => x.GroupRoleDetailRoleDetailID,
                         principalTable: "GroupRolesDetails",
-                        principalColumn: "RoleDetailID",
-                        onDelete: ReferentialAction.Restrict);
+                        principalColumn: "RoleDetailID");
                     table.ForeignKey(
                         name: "FK_AspNetUsers_GroupRolesMaster_GroupId",
                         column: x => x.GroupId,
@@ -572,6 +571,11 @@ namespace MinimalApis.Migrations
                 values: new object[] { 1, "Karachi", null, null, null, 1, 1, "1", new DateTime(2025, 11, 4, 0, 0, 0, 0, DateTimeKind.Utc), 1, "outlet1@gmail.com", null, null, true, "1", new DateTime(2025, 11, 4, 0, 0, 0, 0, DateTimeKind.Utc), "Outlet1", null, null, "0341" });
 
             migrationBuilder.InsertData(
+                table: "AspNetUsers",
+                columns: new[] { "Id", "AccessFailedCount", "CompanyId", "ConcurrencyStamp", "CreatedBy", "Email", "EmailConfirmed", "GroupId", "GroupRoleDetailRoleDetailID", "IsActive", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "OutletsId", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UpdatedBy", "UpdatedDate", "UserName" },
+                values: new object[] { "ab92c759-10fb-47fa-bda6-4435055a6f3c", 0, 1, "242cb370-716d-466f-abb1-c830c3e98c86", null, "admin@library.com", true, 1, null, true, true, null, "ADMIN@LIBRARY.COM", "ADMIN123", 0L, "AQAAAAIAAYagAAAAEN+5qenel1nSpKFSTAEgPC/WyDeUXMQ6aq7IYKQf+FI96Y0qoOZYBTujJfeViaDSlg==", null, false, "956c1af3-961b-4a59-9b6a-9435c6c629ca", false, null, null, "Admin123" });
+
+            migrationBuilder.InsertData(
                 table: "GroupRolesDetails",
                 columns: new[] { "RoleDetailID", "Allow", "Edit", "EntityCode", "GroupID", "New" },
                 values: new object[,]
@@ -581,11 +585,6 @@ namespace MinimalApis.Migrations
                     { 3, true, true, "UserProfile", 1, true },
                     { 4, true, true, "Reports", 1, true }
                 });
-
-            migrationBuilder.InsertData(
-                table: "AspNetUsers",
-                columns: new[] { "Id", "AccessFailedCount", "CompanyId", "ConcurrencyStamp", "CreatedBy", "Email", "EmailConfirmed", "GroupId", "GroupRoleGroupId", "IsActive", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "OutletsId", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UpdatedBy", "UpdatedDate", "UserName" },
-                values: new object[] { "378c0b06-88dd-420a-9c5c-b0fe6d56a683", 0, 1, "540c892e-c2f2-418e-a428-1671a3f5b88e", null, "admin@library.com", true, 1, 1, true, true, null, "ADMIN@LIBRARY.COM", "ADMIN123", 0L, "AQAAAAIAAYagAAAAENzabTFoyAiqITPlTOu0L/ViZ5+xk4r7NWvFVEhqqGB3jRGs+UibYuqmRPnsjR7oEQ==", null, false, "620ea8f8-601a-4cf1-8931-bb3cfd24d568", false, null, null, "Admin123" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -630,9 +629,9 @@ namespace MinimalApis.Migrations
                 column: "GroupId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AspNetUsers_GroupRoleGroupId",
+                name: "IX_AspNetUsers_GroupRoleDetailRoleDetailID",
                 table: "AspNetUsers",
-                column: "GroupRoleGroupId");
+                column: "GroupRoleDetailRoleDetailID");
 
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",

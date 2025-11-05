@@ -53,7 +53,6 @@ public class AppDbContext : IdentityDbContext<AppUser>
     {
         base.OnModelCreating(modelBuilder);
 
-        //  ---AppUser Configuration-- -
         modelBuilder.Entity<AppUser>(entity =>
         {
             entity.Property(e => e.DateCreated).HasDefaultValueSql("GETUTCDATE()");
@@ -88,11 +87,11 @@ public class AppDbContext : IdentityDbContext<AppUser>
             .OnDelete(DeleteBehavior.Restrict);
 
         // --- AppUser → GroupRoleDetail ---
-        modelBuilder.Entity<AppUser>()
-            .HasOne(u => u.GroupRole)
-            .WithMany(r => r.AppUsers)
-            .HasForeignKey(u => u.GroupRoleGroupId)
-            .OnDelete(DeleteBehavior.Restrict);
+        //modelBuilder.Entity<AppUser>()
+        //    .HasOne(u => u.GroupRole)
+        //    .WithMany(r => r.AppUsers)
+        //    .HasForeignKey(u => u.GroupRoleGroupId)
+        //    .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Subscription>()
             .HasOne(s => s.Country)
@@ -228,7 +227,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
             new GroupRoleDetail
             {
                 RoleDetailID = 1,
-                GroupID = 1, // FIXED to match seeded GroupRoleMaster
+                GroupID = 1,
                 EntityCode = "Dashboard",
                 Allow = true,
                 New = true,
@@ -237,7 +236,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
             new GroupRoleDetail
             {
                 RoleDetailID = 2,
-                GroupID = 1, // FIXED to match seeded GroupRoleMaster
+                GroupID = 1,
                 EntityCode = "Outlet",
                 Allow = true,
                 New = true,
@@ -246,7 +245,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
              new GroupRoleDetail
              {
                  RoleDetailID = 3,
-                 GroupID = 1, // FIXED to match seeded GroupRoleMaster
+                 GroupID = 1,
                  EntityCode = "UserProfile",
                  Allow = true,
                  New = true,
@@ -255,7 +254,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
              new GroupRoleDetail
              {
                  RoleDetailID = 4,
-                 GroupID = 1, // FIXED to match seeded GroupRoleMaster
+                 GroupID = 1,
                  EntityCode = "Reports",
                  Allow = true,
                  New = true,
@@ -315,7 +314,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
             LockoutEnabled = true,
             GroupId = 1,
             CompanyId = 1,
-            GroupRoleGroupId = 1,
+            //     GroupRoleGroupId = 1,
         };
         adminUser.PasswordHash = hasher.HashPassword(adminUser, "Admin@123");
 
