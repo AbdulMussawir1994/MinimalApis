@@ -110,6 +110,53 @@ public class UserService : IUserService
         }
     }
 
+    public async Task<GenericResponse<IQueryable<GetRolesByGroup>>> GetRolesByIdAsync(GetRolesById model)
+    {
+        bool userExists = await _db.Users
+            .AsNoTracking()
+            .AnyAsync(u => u.Id == model.UserId && u.IsActive);
+
+        if (!userExists)
+        {
+            return GenericResponse<IQueryable<GetRolesByGroup>>.Fail(
+                message: "User not found or inactive.",
+                code: "ERROR-404"
+            );
+        }
+
+        IQueryable<GetRolesByGroup> query =
+            from u in _db.Users.AsNoTracking()
+            join s in _db.Subscriptions.AsNoTracking() on u.CompanyId equals s.CompanyID
+            join gr in _db.GroupRolesMaster.AsNoTracking()
+                on new { u.GroupId, CompanyId = (int?)u.CompanyId }
+                equals new { GroupId = gr.GroupID, CompanyId = gr.CompanyId }
+            join gd in _db.GroupRolesDetails.AsNoTracking()
+                on gr.GroupID equals gd.GroupID
+            join e in _db.EntityLists.AsNoTracking()
+                on gd.EntityCode equals e.EntityCode
+            where u.Id == model.UserId
+                  && u.IsActive
+                  && (s.IsActive ?? false)
+                  && (e.Active ?? false)
+            select new GetRolesByGroup
+            {
+                RoleDetailId = gd.RoleDetailID,
+                EntityCode = gd.EntityCode,
+                Allow = gd.Allow ?? false,
+                New = gd.New ?? false,
+                Edit = gd.Edit ?? false,
+                Path = e.Path,
+                OrderNum = e.OrderNum,
+                Icon = e.Icon
+            };
+
+        return GenericResponse<IQueryable<GetRolesByGroup>>.Success(
+            data: query,
+            message: "Roles fetched successfully.",
+            code: "SUCCESS-200"
+        );
+    }
+
     private string GenerateToken(string userId, IEnumerable<string> roles, string email)
     {
         var utcNow = DateTime.UtcNow;
@@ -199,117 +246,6 @@ public class UserService : IUserService
         return handler.WriteToken(token);
     }
 
-
-    public async Task<GenericResponse<IQueryable<GetRolesByGroup>>> GetRolesByIdAsync(GetRolesById model)
-    {
-        bool userExists = await _db.Users
-            .AsNoTracking()
-            .AnyAsync(u => u.Id == model.UserId && u.IsActive);
-
-        if (!userExists)
-        {
-            return GenericResponse<IQueryable<GetRolesByGroup>>.Fail(
-                message: "User not found or inactive.",
-                code: "ERROR-404"
-            );
-        }
-
-        IQueryable<GetRolesByGroup> query =
-            from u in _db.Users.AsNoTracking()
-            join s in _db.Subscriptions.AsNoTracking() on u.CompanyId equals s.CompanyID
-            join gr in _db.GroupRolesMaster.AsNoTracking()
-                on new { u.GroupId, CompanyId = (int?)u.CompanyId }
-                equals new { GroupId = gr.GroupID, CompanyId = gr.CompanyId }
-            join gd in _db.GroupRolesDetails.AsNoTracking()
-                on gr.GroupID equals gd.GroupID
-            join e in _db.EntityLists.AsNoTracking()
-                on gd.EntityCode equals e.EntityCode
-            where u.Id == model.UserId
-                  && u.IsActive
-                  && (s.IsActive ?? false)
-                  && (e.Active ?? false)
-            select new GetRolesByGroup
-            {
-                RoleDetailId = gd.RoleDetailID,
-                EntityCode = gd.EntityCode,
-                Allow = gd.Allow ?? false,
-                New = gd.New ?? false,
-                Edit = gd.Edit ?? false,
-                Path = e.Path,
-                OrderNum = e.OrderNum,
-                Icon = e.Icon
-            };
-
-        return GenericResponse<IQueryable<GetRolesByGroup>>.Success(
-            data: query,
-            message: "Roles fetched successfully.",
-            code: "SUCCESS-200"
-        );
-    }
-
-    public async Task<GenericResponse<IEnumerable<OutletDto>>> GetOutletsAsync()
-    {
-        var outlets = await _db.Outlets
-            .AsNoTracking()
-            .Where(o => o.IsActive ?? false)
-            .OrderBy(o => o.OutletName)
-            .Select(o => new OutletDto(
-                o.OutletName,
-                o.Address ?? string.Empty,
-                o.IsActive ?? false,
-                false,   // Delivery
-                true,    // Pickup
-                false    // Dine
-            ))
-            .ToListAsync();
-
-        if (!outlets.Any())
-        {
-            return GenericResponse<IEnumerable<OutletDto>>.Fail(
-                "No outlets found.",
-                "ERROR-404"
-            );
-        }
-
-        return GenericResponse<IEnumerable<OutletDto>>.Success(
-            outlets,
-            "Outlets fetched successfully.",
-            "SUCCESS-200"
-        );
-    }
-
-    public async Task<GenericResponse<IQueryable<OutletDto>>> GetOutletsAsync2()
-    {
-        IQueryable<OutletDto> outletsQuery = _db.Outlets
-            .AsNoTracking()
-            .Where(o => o.IsActive ?? false)
-            .OrderBy(o => o.OutletName)
-            .Select(o => new OutletDto(
-                o.OutletName,
-                o.Address ?? string.Empty,
-                o.IsActive ?? false,
-                false,
-                true,
-                false
-            ));
-
-        bool hasData = await outletsQuery.AnyAsync();
-
-        if (!hasData)
-        {
-            return GenericResponse<IQueryable<OutletDto>>.Fail(
-                "No active outlets found.",
-                "ERROR-404"
-            );
-        }
-
-        return GenericResponse<IQueryable<OutletDto>>.Success(
-            outletsQuery,
-            "Outlets fetched successfully.",
-            "SUCCESS-200"
-        );
-    }
-
     public static byte[] DeriveKmacKey(string userId, IEnumerable<string> roles, string email, byte[] secret)
     {
         var rolesString = string.Join(",", roles.OrderBy(r => r));
@@ -323,40 +259,4 @@ public class UserService : IUserService
         return output;
     }
 
-    public async Task<GenericResponse<bool>> AddOutletAsync(AddOutletDto model)
-    {
-        bool exists = await _db.Outlets
-            .AsNoTracking()
-            .AnyAsync(x => x.OutletName == model.Name && x.Email == model.Email && x.CompanyId == model.CompanyId && x.CountryId == model.CountryId);
-
-        if (exists)
-        {
-            return GenericResponse<bool>.Fail(
-                $"An outlet with the name '{model.Name}' already exists for the given company and country.",
-                "ERROR-409"
-            );
-        }
-
-        var outlet = new Outlet
-        {
-            OutletName = model.Name.Trim(),
-            CountryId = model.CountryId,
-            Email = model.Email?.Trim(),
-            Phone = model.Phone?.Trim(),
-            Address = model.Address?.Trim(),
-            IsActive = model.Active,
-            CreatedBy = "1", // Ideally, pass from the user context or token
-            CreatedOn = DateTime.UtcNow,
-            CompanyId = model.CompanyId,
-            CurrencyID = model.CurrencyId
-        };
-
-        await _db.Outlets.AddAsync(outlet).ConfigureAwait(false);
-
-        var affected = await _db.SaveChangesAsync().ConfigureAwait(false);
-
-        return affected > 0
-            ? GenericResponse<bool>.Success(data: true, message: "New outlet created successfully.", code: "SUCCESS-200")
-            : GenericResponse<bool>.Fail(message: "Failed to create outlet.", code: "ERROR-500");
-    }
 }

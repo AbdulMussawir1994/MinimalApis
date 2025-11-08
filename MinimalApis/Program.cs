@@ -85,6 +85,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+builder.Services.AddScoped<IOutletService, OutletService>();
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -153,7 +154,7 @@ app.MapGet("/employees", async (IEmployeeService service) =>
 //.RequireAuthorization(new AuthorizeAttribute { Roles = "Admin" }); // ✅ Only Admin role
 
 // Outlet Endpoints
-app.MapGet("/outlets", async (IUserService service) =>
+app.MapGet("/outlets", async (IOutletService service) =>
     Results.Ok(await service.GetOutletsAsync()))
     .RequireAuthorization();
 
@@ -191,7 +192,7 @@ app.MapPost("/employees", async (EmployeeDto dto, IEmployeeService service) =>
 });
 
 //Add Outlet
-app.MapPost("/outlets", async (AddOutletDto model, IUserService service) =>
+app.MapPost("/outlets", async (AddOutletDto model, IOutletService service) =>
 {
     var validation = model.ValidateModel();
     if (validation is IStatusCodeHttpResult { StatusCode: 400 })
