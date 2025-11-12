@@ -12,8 +12,8 @@ using MinimalApis.DataDbContext;
 namespace MinimalApis.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251105050002_Initital")]
-    partial class Initital
+    [Migration("20251112171158_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -262,10 +262,10 @@ namespace MinimalApis.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "ab92c759-10fb-47fa-bda6-4435055a6f3c",
+                            Id = "cb1cf929-4f13-4ead-85f2-e97ab609305e",
                             AccessFailedCount = 0,
                             CompanyId = 1,
-                            ConcurrencyStamp = "242cb370-716d-466f-abb1-c830c3e98c86",
+                            ConcurrencyStamp = "00c8c7c0-7be5-4464-ae28-3322e0a6f61e",
                             DateCreated = new DateTime(2025, 11, 4, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "admin@library.com",
                             EmailConfirmed = true,
@@ -275,9 +275,9 @@ namespace MinimalApis.Migrations
                             NormalizedEmail = "ADMIN@LIBRARY.COM",
                             NormalizedUserName = "ADMIN123",
                             OutletsId = 0L,
-                            PasswordHash = "AQAAAAIAAYagAAAAEN+5qenel1nSpKFSTAEgPC/WyDeUXMQ6aq7IYKQf+FI96Y0qoOZYBTujJfeViaDSlg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEPkudzH6SF5qJ7MW34WXascpBoBhZ3cjNUphymGlQ0xz9j5hTRUQRK66Cq5vu1HK9w==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "956c1af3-961b-4a59-9b6a-9435c6c629ca",
+                            SecurityStamp = "8a93363d-716b-4973-a49f-2d78fc911946",
                             TwoFactorEnabled = false,
                             UserName = "Admin123"
                         });
@@ -455,6 +455,9 @@ namespace MinimalApis.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DepartmentId");
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("IX_Employee_Name_EF");
 
                     b.HasIndex("UserId");
 
@@ -729,7 +732,7 @@ namespace MinimalApis.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ImageName")
                         .HasColumnType("nvarchar(max)");
@@ -748,7 +751,7 @@ namespace MinimalApis.Migrations
 
                     b.Property<string>("OutletName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("OutletNumber")
                         .HasColumnType("nvarchar(max)");
@@ -766,6 +769,10 @@ namespace MinimalApis.Migrations
                     b.HasIndex("CountryId");
 
                     b.HasIndex("CurrencyID");
+
+                    b.HasIndex("OutletName", "Email", "CompanyId", "CountryId")
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL AND [CompanyId] IS NOT NULL AND [CountryId] IS NOT NULL");
 
                     b.ToTable("Outlets");
 

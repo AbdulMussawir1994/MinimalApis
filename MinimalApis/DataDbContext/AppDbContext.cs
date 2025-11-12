@@ -63,6 +63,26 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 .HasIndex(o => new { o.OutletName, o.Email, o.CompanyId, o.CountryId })
                  .IsUnique();
 
+        modelBuilder.Entity<Employee>()
+            .HasIndex(e => e.Name)
+            .HasDatabaseName("IX_Employee_Name_EF");
+
+        //For Unique Column
+        //modelBuilder.Entity<Employee>()
+        //    .HasIndex(e => e.Name)
+        //    .IsUnique();
+
+        //Manual Index Creation Script
+
+        //CREATE NONCLUSTERED INDEX IX2_Employee_Name
+        //ON Employees(Email);
+
+        //SELECT* FROM Employees WHERE Name = 'Tooba';
+
+        //EXEC sp_helpindex 'Employees';
+
+        //SELECT* FROM Employees WITH(INDEX(IX_Employee_Name)) WHERE Name = 'Tooba';
+
         // ---Relationships-- -
         modelBuilder.Entity<Department>()
             .HasMany(d => d.Employees)

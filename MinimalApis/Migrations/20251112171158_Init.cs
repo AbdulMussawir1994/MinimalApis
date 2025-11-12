@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace MinimalApis.Migrations
 {
     /// <inheritdoc />
-    public partial class Initital : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -218,9 +218,9 @@ namespace MinimalApis.Migrations
                 {
                     ID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    OutletName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    OutletName = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CountryId = table.Column<int>(type: "int", nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: true),
@@ -573,7 +573,7 @@ namespace MinimalApis.Migrations
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
                 columns: new[] { "Id", "AccessFailedCount", "CompanyId", "ConcurrencyStamp", "CreatedBy", "Email", "EmailConfirmed", "GroupId", "GroupRoleDetailRoleDetailID", "IsActive", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "OutletsId", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UpdatedBy", "UpdatedDate", "UserName" },
-                values: new object[] { "ab92c759-10fb-47fa-bda6-4435055a6f3c", 0, 1, "242cb370-716d-466f-abb1-c830c3e98c86", null, "admin@library.com", true, 1, null, true, true, null, "ADMIN@LIBRARY.COM", "ADMIN123", 0L, "AQAAAAIAAYagAAAAEN+5qenel1nSpKFSTAEgPC/WyDeUXMQ6aq7IYKQf+FI96Y0qoOZYBTujJfeViaDSlg==", null, false, "956c1af3-961b-4a59-9b6a-9435c6c629ca", false, null, null, "Admin123" });
+                values: new object[] { "cb1cf929-4f13-4ead-85f2-e97ab609305e", 0, 1, "00c8c7c0-7be5-4464-ae28-3322e0a6f61e", null, "admin@library.com", true, 1, null, true, true, null, "ADMIN@LIBRARY.COM", "ADMIN123", 0L, "AQAAAAIAAYagAAAAEPkudzH6SF5qJ7MW34WXascpBoBhZ3cjNUphymGlQ0xz9j5hTRUQRK66Cq5vu1HK9w==", null, false, "8a93363d-716b-4973-a49f-2d78fc911946", false, null, null, "Admin123" });
 
             migrationBuilder.InsertData(
                 table: "GroupRolesDetails",
@@ -646,6 +646,11 @@ namespace MinimalApis.Migrations
                 column: "CurrencyId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Employee_Name_EF",
+                table: "Employees",
+                column: "Name");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Employees_DepartmentId",
                 table: "Employees",
                 column: "DepartmentId");
@@ -704,6 +709,13 @@ namespace MinimalApis.Migrations
                 name: "IX_Outlets_CurrencyID",
                 table: "Outlets",
                 column: "CurrencyID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Outlets_OutletName_Email_CompanyId_CountryId",
+                table: "Outlets",
+                columns: new[] { "OutletName", "Email", "CompanyId", "CountryId" },
+                unique: true,
+                filter: "[Email] IS NOT NULL AND [CompanyId] IS NOT NULL AND [CountryId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SubscriptionPaymentDetails_CompanyID",
