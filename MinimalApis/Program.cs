@@ -155,7 +155,7 @@ app.MapGet("/employees", async (IEmployeeService service) =>
 
 // Outlet Endpoints
 app.MapGet("/outlets", async (IOutletService service) =>
-    Results.Ok(await service.GetOutletsAsync()))
+    Results.Ok(await service.GetOutletsAsync2()))
     .RequireAuthorization();
 
 //Get Roles
