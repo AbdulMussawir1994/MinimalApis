@@ -46,22 +46,3 @@ jobs:
         with:
           name: app-published
           path: ./publish
-
-  deploy:
-    needs: publish
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download Published Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: app-published
-          path: ./publish
-
-      - name: FTP Deploy
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./publish
