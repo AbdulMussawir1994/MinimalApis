@@ -1,0 +1,48 @@
+name: .NET Build Test Deploy (API/MVC)
+
+on:
+  push:
+    branches: 
+      - master
+  workflow_dispatch:
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build -c Release --no-restore
+
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Publish App
+        run: dotnet publish -c Release -o ./publish
+
+      - name: Upload Published Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-published
+          path: ./publish
