@@ -12,7 +12,7 @@ using MinimalApis.DataDbContext;
 namespace MinimalApis.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251112171158_Init")]
+    [Migration("20251228072254_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -262,10 +262,10 @@ namespace MinimalApis.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "cb1cf929-4f13-4ead-85f2-e97ab609305e",
+                            Id = "9efdf2c7-bb67-46f3-9049-5e19163549f0",
                             AccessFailedCount = 0,
                             CompanyId = 1,
-                            ConcurrencyStamp = "00c8c7c0-7be5-4464-ae28-3322e0a6f61e",
+                            ConcurrencyStamp = "a2155926-ce85-44cc-8b3f-4e20bf753e7d",
                             DateCreated = new DateTime(2025, 11, 4, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "admin@library.com",
                             EmailConfirmed = true,
@@ -275,9 +275,9 @@ namespace MinimalApis.Migrations
                             NormalizedEmail = "ADMIN@LIBRARY.COM",
                             NormalizedUserName = "ADMIN123",
                             OutletsId = 0L,
-                            PasswordHash = "AQAAAAIAAYagAAAAEPkudzH6SF5qJ7MW34WXascpBoBhZ3cjNUphymGlQ0xz9j5hTRUQRK66Cq5vu1HK9w==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEPJQwqcZcuwQxDZWqDBXHBchr3A/dvykHdPE0H91KlFpJ400UXfxBJsUUjSseTC/yw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "8a93363d-716b-4973-a49f-2d78fc911946",
+                            SecurityStamp = "176c9de8-fc0b-45ef-ad3e-74b0e83f28ba",
                             TwoFactorEnabled = false,
                             UserName = "Admin123"
                         });
@@ -579,6 +579,58 @@ namespace MinimalApis.Migrations
                     b.HasIndex("SubscriptionCompanyID");
 
                     b.ToTable("EntityListDetails");
+                });
+
+            modelBuilder.Entity("MinimalApis.Entities.Model.Expense", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExpenseName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Expenses", t =>
+                        {
+                            t.HasCheckConstraint("CK_Expense_Category", "[Category] IN ('Home', 'Personal', 'Family', 'Other')");
+
+                            t.HasCheckConstraint("CK_Expense_Type", "[Type] IN ('Prepaid', 'Postpaid')");
+                        });
                 });
 
             modelBuilder.Entity("MinimalApis.Entities.Model.GroupRoleDetail", b =>

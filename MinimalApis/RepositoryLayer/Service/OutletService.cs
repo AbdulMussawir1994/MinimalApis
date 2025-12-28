@@ -46,8 +46,11 @@ namespace MinimalApis.RepositoryLayer.Service
             );
         }
 
-        public async Task<GenericResponse<IQueryable<OutletDto>>> GetOutletsAsync2()
+        public async Task<GenericResponse<IQueryable<OutletDto>>> GetOutletsAsync2(CancellationToken token)
         {
+
+            //await Task.Delay(TimeSpan.FromSeconds(10));
+
             IQueryable<OutletDto> outletsQuery = _db.Outlets
                 .AsNoTracking()
                 .Where(o => o.IsActive ?? false)
@@ -61,7 +64,7 @@ namespace MinimalApis.RepositoryLayer.Service
                     false
                 ));
 
-            bool hasData = await outletsQuery.AnyAsync();
+            bool hasData = await outletsQuery.AnyAsync(token);
 
             if (!hasData)
             {

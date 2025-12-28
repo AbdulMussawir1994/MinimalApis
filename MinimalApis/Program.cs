@@ -86,6 +86,7 @@ builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 builder.Services.AddScoped<IOutletService, OutletService>();
+builder.Services.AddScoped<IExpenseService, ExpenseService>();
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -154,8 +155,8 @@ app.MapGet("/employees", async (IEmployeeService service) =>
 //.RequireAuthorization(new AuthorizeAttribute { Roles = "Admin" }); // ✅ Only Admin role
 
 // Outlet Endpoints
-app.MapGet("/outlets", async (IOutletService service) =>
-    Results.Ok(await service.GetOutletsAsync2()))
+app.MapGet("/outlets", async (IOutletService service, CancellationToken token) =>
+    Results.Ok(await service.GetOutletsAsync2(token)))
     .RequireAuthorization();
 
 //Get Roles
@@ -169,6 +170,23 @@ app.MapPost("/GetRolesById", async (GetRolesById model, IUserService service) =>
     return result.Status ? Results.Ok(result) : Results.BadRequest(result);
 
 }).RequireAuthorization();
+
+app.MapPost("/AddExpense", async (CreateExpenseDto dto, IExpenseService service, CancellationToken token) =>
+{
+    var validation = dto.ValidateModel();
+    if (validation is IStatusCodeHttpResult { StatusCode: 400 })
+        return validation;
+
+    var result = await service.AddExpenseAsync(dto, token);
+
+    if (!result.Status)
+        return Results.BadRequest(result);
+
+    return Results.Created($"/AddExpense/{result.Data}", result);
+})
+.WithName("AddExpense")
+.Produces<GenericResponse<OutletDto>>(StatusCodes.Status201Created)
+.Produces<GenericResponse<OutletDto>>(StatusCodes.Status400BadRequest);
 
 //Get Employee By Id
 app.MapGet("/employees/{id:int}", async (int id, IEmployeeService service) =>

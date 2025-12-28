@@ -5,21 +5,13 @@ namespace MinimalApis.DataDbContext;
 
 public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 {
-    private readonly IConfiguration _configuration;
-
-    public AppDbContextFactory(IConfiguration config)
-    {
-        _configuration = config;
-    }
-
     public AppDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-        optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DefaultConnection"));
 
-        // Use a null logger (since EF tools don’t use it)
-        var logger = LoggerFactory.Create(builder => { }).CreateLogger<AppDbContext>();
+        optionsBuilder.UseSqlServer(
+            "Server=.;Database=MinimalApis;User ID=sa;Password=123;Trusted_Connection=False;Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=True;");
 
-        return new AppDbContext(optionsBuilder.Options, logger);
+        return new AppDbContext(optionsBuilder.Options);
     }
 }

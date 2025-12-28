@@ -83,6 +83,28 @@ namespace MinimalApis.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Expenses",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ExpenseName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
+                    Category = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Expenses", x => x.Id);
+                    table.CheckConstraint("CK_Expense_Category", "[Category] IN ('Home', 'Personal', 'Family', 'Other')");
+                    table.CheckConstraint("CK_Expense_Type", "[Type] IN ('Prepaid', 'Postpaid')");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -573,7 +595,7 @@ namespace MinimalApis.Migrations
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
                 columns: new[] { "Id", "AccessFailedCount", "CompanyId", "ConcurrencyStamp", "CreatedBy", "Email", "EmailConfirmed", "GroupId", "GroupRoleDetailRoleDetailID", "IsActive", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "OutletsId", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UpdatedBy", "UpdatedDate", "UserName" },
-                values: new object[] { "cb1cf929-4f13-4ead-85f2-e97ab609305e", 0, 1, "00c8c7c0-7be5-4464-ae28-3322e0a6f61e", null, "admin@library.com", true, 1, null, true, true, null, "ADMIN@LIBRARY.COM", "ADMIN123", 0L, "AQAAAAIAAYagAAAAEPkudzH6SF5qJ7MW34WXascpBoBhZ3cjNUphymGlQ0xz9j5hTRUQRK66Cq5vu1HK9w==", null, false, "8a93363d-716b-4973-a49f-2d78fc911946", false, null, null, "Admin123" });
+                values: new object[] { "9efdf2c7-bb67-46f3-9049-5e19163549f0", 0, 1, "a2155926-ce85-44cc-8b3f-4e20bf753e7d", null, "admin@library.com", true, 1, null, true, true, null, "ADMIN@LIBRARY.COM", "ADMIN123", 0L, "AQAAAAIAAYagAAAAEPJQwqcZcuwQxDZWqDBXHBchr3A/dvykHdPE0H91KlFpJ400UXfxBJsUUjSseTC/yw==", null, false, "176c9de8-fc0b-45ef-ad3e-74b0e83f28ba", false, null, null, "Admin123" });
 
             migrationBuilder.InsertData(
                 table: "GroupRolesDetails",
@@ -756,6 +778,9 @@ namespace MinimalApis.Migrations
 
             migrationBuilder.DropTable(
                 name: "EntityListDetails");
+
+            migrationBuilder.DropTable(
+                name: "Expenses");
 
             migrationBuilder.DropTable(
                 name: "MainUsers");

@@ -9,12 +9,9 @@ namespace MinimalApis.DataDbContext;
 
 public class AppDbContext : IdentityDbContext<AppUser>
 {
-    private readonly ILogger<AppDbContext> _logger;
 
-    public AppDbContext(DbContextOptions<AppDbContext> options, ILogger<AppDbContext> logger) : base(options)
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
         try
         {
             var databaseCreator = Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
@@ -32,7 +29,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while initializing the database.");
+            Console.WriteLine($"An error occurred while creating the database: {ex.Message}");
         }
     }
     // DbSets
@@ -48,10 +45,42 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
     public DbSet<SubscriptionPaymentDetail> SubscriptionPaymentDetails => Set<SubscriptionPaymentDetail>();
     public DbSet<User> MainUsers => Set<User>();
+    public DbSet<Expense> Expenses => Set<Expense>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Expense>(entity =>
+        {
+            // Max lengths
+            entity.Property(e => e.ExpenseName)
+                  .HasMaxLength(50)
+                  .IsRequired();
+
+            entity.Property(e => e.Category)
+                  .HasMaxLength(10)
+                  .IsRequired();
+
+            entity.Property(e => e.Type)
+                  .HasMaxLength(10)
+                  .IsRequired();
+
+            entity.Property(e => e.IsActive)
+                  .HasDefaultValue(true)
+                  .IsRequired();
+
+            entity.Property(e => e.CreatedDate)
+                  .HasDefaultValueSql("GETUTCDATE()");
+
+            // ✅ Enforce only allowed Category values
+            entity.HasCheckConstraint("CK_Expense_Category",
+                "[Category] IN ('Home', 'Personal', 'Family', 'Other')");
+
+            // ✅ Enforce only allowed Type values
+            entity.HasCheckConstraint("CK_Expense_Type",
+                "[Type] IN ('Prepaid', 'Postpaid')");
+        });
 
         modelBuilder.Entity<AppUser>(entity =>
         {
